@@ -59,7 +59,7 @@ bool MdlFormat::read(std::istream& in, Core::Molecule& mol)
   // The first line is the molecule name.
   getline(in, buffer);
   buffer = trimmed(buffer);
-  // Check for the record separator in SDF, and skip if found.
+  // Check for the record separator in MDL, and skip if found.
   if (buffer == "$$$$") {
     getline(in, buffer);
     buffer = trimmed(buffer);
