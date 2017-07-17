@@ -112,13 +112,15 @@ add_subdirectory(navigator)
 add_subdirectory(networkdatabases)
 add_subdirectory(openbabel)
 add_subdirectory(quantumoutput)
-add_subdirectory(symmetry)
 add_subdirectory(playertool)
 add_subdirectory(povray)
 add_subdirectory(select)
 add_subdirectory(selectiontool)
-add_subdirectory(spacegroup)
+if(USE_SPGLIB)
+  add_subdirectory(spacegroup)
+endif()
 add_subdirectory(spectra)
+add_subdirectory(vrml)
 add_subdirectory(workflows)
 
 if(USE_MOLEQUEUE)
@@ -131,6 +133,10 @@ endif()
 
 if(USE_LIBARCHIVE)
   add_subdirectory(plugindownloader)
+endif()
+
+if(USE_LIBMSYM)
+  add_subdirectory(symmetry)
 endif()
 
 # The scene plugins
