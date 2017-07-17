@@ -54,14 +54,32 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
     if(startsWith(buffer, "ENDMDL"))
       break;
 
-    printf("%s\n", buffer);
+    else if(startsWith(buffer, "ATOM")) {   // 2 spaces after "ATOM" in other
+                                            // codes, why?
+      int serial;
+      string name;
+      char altLoc;    // Alternate location
+      string ResName; // Residue name
+      char chainId;   // Chain identifier
+      int resSeq;     // Residue sequence number
+      char iCode;     // Unique ID for inserted residues
+      Vector3 pos;    // Coordinates
+      float tempFactor;
+      string element; // Element symbol, right justififed
+      string charge;
+
+      bool ok(false);
+      serial = (lexicalCast<int>(buffer.substr(6, 5), ok));
+      // PDB columns start numbering at 1
+      if (!ok) {
+        appendError("Error parsing atom serial number");
+        return false;
+      }
+
+    }
+
   }
 
-  return true;
-}
-
-bool PdbFormat::write(std::ostream& out, const Core::Molecule&mol)
-{
   return true;
 }
 

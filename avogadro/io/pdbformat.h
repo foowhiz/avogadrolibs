@@ -57,7 +57,11 @@ public:
   std::vector<std::string> mimeTypes() const override;
 
   bool read(std::istream& in, Core::Molecule& molecule) override;
-  bool write(std::ostream& out, const Core::Molecule& molecule) override;
+  bool write(std::ostream& out, const Core::Molecule& molecule) override
+  {
+    // Writing a PDB file is not currently supported
+    return false;
+  }
 };
 
 } // end Io namespace
