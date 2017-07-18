@@ -54,8 +54,9 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
     if(startsWith(buffer, "ENDMDL"))
       break;
 
-    else if(startsWith(buffer, "ATOM")) {   // 2 spaces after "ATOM" in other
-                                            // codes, why?
+    else if(startsWith(buffer, "ATOM") || startsWith(buffer, "HETATM")) {
+    // 2 spaces after "ATOM" in other
+    // codes, why?
       int serial;
       string name;
       char altLoc;    // Alternate location
@@ -69,13 +70,65 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       string charge;
 
       bool ok(false);
-      serial = (lexicalCast<int>(buffer.substr(6, 5), ok));
+      serial = lexicalCast<int>(buffer.substr(6, 5), ok);
       // PDB columns start numbering at 1
       if (!ok) {
         appendError("Error parsing atom serial number");
         return false;
       }
 
+      name = buffer.substr(12, 4);
+
+      altLoc = lexicalCast<char>(buffer.substr(16, 1), ok);
+      if (!ok) {
+        appendError("Error parsing alternate location");
+        return false;
+      }
+      ResName = buffer.substr(17, 3);
+      chainId = lexicalCast<char>(buffer.substr(21, 1), ok);
+      if (!ok) {
+        appendError("Error parsing chain Identification number");
+        return false;
+      }
+
+      resSeq = lexicalCast<int>(buffer.substr(22, 4), ok);
+      if (!ok) {
+        appendError("Error parsing residue sequence number");
+        return false;
+      }
+
+      iCode = lexicalCast<char>(buffer.substr(26, 1), ok);
+      if(!ok) {
+        appendError("Error parsing ICode");
+        return false;
+      }
+
+      pos.x() = lexicalCast<Real>(buffer.substr(30, 8), ok);
+      if (!ok) {
+      appendError("Failed to parse x coordinate: " + buffer.substr(30, 8));
+      return false;
+      }
+
+      pos.y() = lexicalCast<Real>(buffer.substr(38, 8), ok);
+      if (!ok) {
+      appendError("Failed to parse y coordinate: " + buffer.substr(38, 8));
+      return false;
+      }
+
+      pos.z() = lexicalCast<Real>(buffer.substr(46, 8), ok);
+      if (!ok) {
+      appendError("Failed to parse z coordinate: " + buffer.substr(46, 8));
+      return false;
+      }
+
+      tempFactor = lexicalCast<float>(buffer.substr(60, 6), ok);
+      if (!ok) {
+        appendError("Error parsing Temp factor");
+        return false;
+      }
+
+      element = buffer.substr(76, 2);
+      charge = buffer.substr(78, 2);
     }
 
   }
