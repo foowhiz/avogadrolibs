@@ -131,6 +131,119 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       charge = buffer.substr(78, 2);
     }
 
+    else if (startsWith(buffer, "CONECT")) {
+      int a;  // Atom serial number
+      int b1; // Serial numbers of subsequent bonded atoms
+      int b2;
+      int b3;
+      int b4;
+
+      bool ok(false);
+      a = lexicalCast<int>(buffer.substr(6, 5), ok);
+      if (!ok) {
+        appendError("Error parsing atom serial number");
+        return false;
+      }
+
+      b1 = lexicalCast<int>(buffer.substr(11, 5), ok);
+      if (!ok) {
+        appendError("Error parsing serial number of first bonded atom");
+        return false;
+      }
+
+      b2 = lexicalCast<int>(buffer.substr(16, 5), ok);
+      if (!ok) {
+        appendError("Error parsing serial number of second bonded atom");
+        return false;
+      }
+
+      b3 = lexicalCast<int>(buffer.substr(21, 5), ok);
+      if (!ok) {
+        appendError("Error parsing serial number of third bonded atom");
+        return false;
+      }
+
+      b4 = lexicalCast<int>(buffer.substr(26, 5), ok);
+      if (!ok) {
+        appendError("Error parsing serial number of fourth bonded atom");
+        return false;
+      }
+    }
+
+    else if (startsWith(buffer, "HELIX")) { // Space after HELIX?
+      int serial;         // Serial number of helix, starts at 1
+      string helixId;     // Alphanumeric helix identifier
+      string initResName;
+      char initChainId;
+      int initSeqNum;
+      char initICode;
+      string endResName;
+      char endChainId;
+      int endSeqNum;
+      char endICode;
+      int helixClass;   // Helix type classification
+      int length;       // Length of the helix
+
+      serial = lexicalCast<int>(buffer.substr(7, 3), ok);
+      if (!ok) {
+        appendError("Error parsing serial number");
+        return false;
+      }
+
+      helixId = buffer.substr(11, 3);
+      initResName = buffer.substr(15, 3);
+
+      initChainId = lexicalCast<char>(buffer.substr(19, 1), ok);
+      if (!ok) {
+        appendError("Error parsing initial chain ID");
+        return false;
+      }
+
+      initSeqNum = lexicalCast<int>(buffer.substr(21, 4), ok);
+      if (!ok) {
+        appendError("Error parsing initial sequence number");
+        return false;
+      }
+
+      initICode = lexicalCast<char>(buffer.substr(25, 1), ok);
+      if (!ok) {
+        appendError("Error parsing initial ICode");
+        return false;
+      }
+
+      endResName = buffer.substr(27, 3);
+
+      endChainId = lexicalCast<char>(buffer.substr(31, 1), ok);
+      if (!ok) {
+        appendError("Error parsing end chain ID");
+        return false;
+      }
+
+      endSeqNum = lexicalCast<int>(buffer.substr(33, 4), ok);
+      if (!ok) {
+        appendError("Error parsing end sequence number");
+        return false;
+      }
+
+      endICode = lexicalCast<char>(buffer.substr(37, 1), ok);
+      if (!ok) {
+        appendError("Error parsing end ICode");
+        return false;
+      }
+
+      helixClass = lexicalCast<int>(buffer.substr(38, 2), ok);
+      if (!ok) {
+        appendError("Error parsing helix class");
+        return false;
+      }
+
+      length = lexicalCast<int>(buffer.substr(71, 5), ok);
+      if (!ok) {
+        appendError("Error parsing helix length");
+        return false;
+      }
+    }
+
   }
 
   return true;
