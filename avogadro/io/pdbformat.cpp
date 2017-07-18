@@ -244,6 +244,133 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       }
     }
 
+    else if (startsWith(buffer, "SHEET")) { // Space after SHEET?
+      int strand;
+      string sheetId;
+      int numStrands;
+      string initResName;
+      char initChainId;
+      int initSeqNum;
+      char initICode;
+      string endResName;
+      char endChainId;
+      int endSeqNum;
+      char endICode;
+      int sense;        // Sense of strand wrt previous strand, -1, 0 or 1
+      string curAtom;   // Cur refers to current strand
+      string curResName;
+      char curChainId;
+      int curResSeq;
+      char curICode;
+      string prevAtom;
+      string prevResName;
+      char prevChainId;
+      int prevResSeq;
+      char prevICode;
+
+      strand = lexicalCast<int>(buffer.substr(7, 3), ok);
+      if (!ok) {
+        appendError("Error parsing strand number");
+        return false;
+      }
+
+      sheetId = buffer.substr(11, 3);
+      
+      numStrands = lexicalCast<int>(buffer.substr(14, 2), ok);
+      if (!ok) {
+        appendError("Error parsing number of strands");
+        return false;
+      }
+
+      initResName = buffer.substr(17, 3);
+      
+      initChainId = lexicalCast<char>(buffer.substr(21, 1), ok);
+      if (!ok) {
+        appendError("Error parsing end initial chain ID");
+        return false;
+      }
+
+      initSeqNum = lexicalCast<int>(buffer.substr(22, 4), ok);
+      if (!ok) {
+        appendError("Error parsing initial sequence number");
+        return false;
+      }
+
+      initICode = lexicalCast<char>(buffer.substr(26, 1), ok);
+      if (!ok) {
+        appendError("Error parsing initial ICode");
+        return false;
+      }
+
+      endResName = buffer.substr(28, 3);
+
+      endChainId = lexicalCast<char>(buffer.substr(32, 1), ok);
+      if (!ok) {
+        appendError("Error parsing end chain ID");
+        return false;
+      }
+
+      endSeqNum = lexicalCast<int>(buffer.substr(33, 4), ok);
+      if (!ok) {
+        appendError("Error parsing end sequence number");
+        return false;
+      }
+
+      endICode = lexicalCast<char>(buffer.substr(37, 1), ok);
+      if (!ok) {
+        appendError("Error parsing end ICode");
+        return false;
+      }
+
+      sense = lexicalCast<int>(buffer.substr(38, 2), ok);
+      if (!ok) {
+        appendError("Error parsing sense");
+        return false;
+      }
+
+      curAtom = buffer.substr(41, 4);
+      curResName = buffer.substr(45, 3);
+
+      curChainId = lexicalCast<char>(buffer.substr(49, 1), ok);
+      if (!ok) {
+        appendError("Error parsing chain ID");
+        return false;
+      }
+
+      curResSeq = lexicalCast<int>(buffer.substr(50, 4), ok);
+      if (!ok) {
+        appendError("Error parsing current residue sequence");
+        return false;
+      }
+
+      curICode = lexicalCast<char>(buffer.substr(54, 1), ok);
+      if (!ok) {
+        appendError("Error parsing current ICode");
+        return false;
+      }
+
+      prevAtom = buffer.substr(56, 4);
+      prevResName = buffer.substr(60, 3);
+
+      prevChainId = lexicalCast<char>(buffer.substr(64, 1), ok);
+      if (!ok) {
+        appendError("Error parsing previous chain ID");
+        return false;
+      }
+
+      prevResSeq = lexicalCast<int>(buffer.substr(65, 4), ok);
+      if (!ok) {
+        appendError("Error parsing previous residue sequence");
+        return false;
+      }
+
+      prevICode = lexicalCast<char>(buffer.substr(69, 1), ok);
+      if (!ok) {
+        appendError("Error parsing previous ICode");
+        return false;
+      }
+    }
+
   }
 
   return true;
