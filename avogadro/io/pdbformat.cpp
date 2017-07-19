@@ -34,6 +34,7 @@ using Avogadro::Core::startsWith;
 using std::string;
 using std::istringstream;
 using std::getline;
+using std::vector;
 
 namespace Avogadro {
 namespace Io {
@@ -51,6 +52,12 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
   string buffer;
 
   while (getline(in, buffer)) {
+    Matrix4f bioMatrix;           // Stores one BIOMT matrix
+    vector<Matrix4f> bioMatrices; // Vector of BIOMT matrices
+
+    Matrix4f symMatrix;           // Stores one SMTRY matrix
+    vector<Matrix4f> symMatrices; // Vector of SMTRY matrices
+
     if(startsWith(buffer, "ENDMDL"))
       break;
 
@@ -84,7 +91,9 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
         appendError("Error parsing alternate location");
         return false;
       }
+
       ResName = buffer.substr(17, 3);
+      
       chainId = lexicalCast<char>(buffer.substr(21, 1), ok);
       if (!ok) {
         appendError("Error parsing chain Identification number");
@@ -184,6 +193,7 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       int helixClass;   // Helix type classification
       int length;       // Length of the helix
 
+      bool ok(false);
       serial = lexicalCast<int>(buffer.substr(7, 3), ok);
       if (!ok) {
         appendError("Error parsing serial number");
@@ -268,6 +278,7 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       int prevResSeq;
       char prevICode;
 
+      bool ok(false);
       strand = lexicalCast<int>(buffer.substr(7, 3), ok);
       if (!ok) {
         appendError("Error parsing strand number");
@@ -371,8 +382,86 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       }
     }
 
-  }
+    else if(startsWith(buffer, "REMARK 350   BIOMT")) {
+      // Further possible optimization by reading all matrices together
+      bool ok(false);
+      int row = lexicalCast<int>(buffer.substr(18, 1), ok) - 1;
+      if (!ok) {
+        appendError("Error parsing BIOMT matrix row number");
+        return false;
+      }
 
+      bioMatrix(row, 0) = lexicalCast<float>(buffer.substr(23, 10), ok);
+      if (!ok) {
+        appendError("Error parsing BIOMT matrix column 0");
+        return false;
+      }
+
+
+      bioMatrix(row, 1) = lexicalCast<float>(buffer.substr(33, 10), ok);
+      if (!ok) {
+        appendError("Error parsing BIOMT matrix column 1");
+        return false;
+      }
+
+
+      bioMatrix(row, 2) = lexicalCast<float>(buffer.substr(43, 10), ok);
+      if (!ok) {
+        appendError("Error parsing BIOMT matrix column 2");
+        return false;
+      }
+
+
+      bioMatrix(row, 3) = lexicalCast<float>(buffer.substr(53, 5), ok);
+      if (!ok) {
+        appendError("Error parsing BIOMT matrix column 3");
+        return false;
+      }
+
+      if (row == 2)
+        bioMatrices.push_back(bioMatrix);
+    }
+
+    else if(startsWith(buffer, "REMARK 290   SMTRY")) {
+      // Further possible optimization by reading all matrices together
+      bool ok(false);
+      int row = lexicalCast<int>(buffer.substr(18, 1), ok) - 1;
+      if (!ok) {
+        appendError("Error parsing SMTRY matrix row number");
+        return false;
+      }
+
+      symMatrix(row, 0) = lexicalCast<float>(buffer.substr(23, 10), ok);
+      if (!ok) {
+        appendError("Error parsing SMTRY matrix column 0");
+        return false;
+      }
+
+
+      symMatrix(row, 1) = lexicalCast<float>(buffer.substr(33, 10), ok);
+      if (!ok) {
+        appendError("Error parsing SMTRY matrix column 1");
+        return false;
+      }
+
+
+      symMatrix(row, 2) = lexicalCast<float>(buffer.substr(43, 10), ok);
+      if (!ok) {
+        appendError("Error parsing SMTRY matrix column 2");
+        return false;
+      }
+
+
+      symMatrix(row, 3) = lexicalCast<float>(buffer.substr(53, 5), ok);
+      if (!ok) {
+        appendError("Error parsing SMTRY matrix column 3");
+        return false;
+      }
+
+      if (row == 2)
+        symMatrices.push_back(symMatrix);
+    }
+  }
   return true;
 }
 
