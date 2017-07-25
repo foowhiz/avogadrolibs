@@ -20,11 +20,20 @@
 
 #include <avogadro/core/molecule.h>
 
-#include <avogadro/io/mdlformat.h>
+#include <avogadro/io/pdbformat.h>
 
 using Avogadro::Core::Molecule;
 using Avogadro::Core::Atom;
 using Avogadro::Core::Bond;
 using Avogadro::Core::Variant;
 using Avogadro::Io::FileFormat;
-using Avogadro::Io::MdlFormat;
+using Avogadro::Io::PdbFormat;
+
+TEST(PdbTest, readFile)
+{
+  PdbFormat pdb;
+  Molecule molecule;
+  bool success = pdb.readFile(std::string(AVOGADRO_DATA) + "/data/5ujw.pdb",
+                              molecule);
+  EXPECT_TRUE(success);
+}
