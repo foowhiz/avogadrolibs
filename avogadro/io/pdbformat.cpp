@@ -75,10 +75,12 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       name = buffer.substr(12, 4);
 
       char altLoc; // Alternate location
-      altLoc = lexicalCast<char>(buffer.substr(16, 1), ok);
-      if (!ok) {
-        appendError("Error parsing alternate location");
-        return false;
+      if (buffer.substr(16, 1) != " ") {
+        altLoc = lexicalCast<char>(buffer.substr(16, 1), ok);
+        if (!ok) {
+          appendError("Error parsing alternate location");
+          return false;
+        }
       }
 
       string ResName; // Residue name
@@ -98,11 +100,15 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
         return false;
       }
 
-      char iCode; // Unique ID for inserted residues
-      iCode = lexicalCast<char>(buffer.substr(26, 1), ok);
-      if (!ok) {
-        appendError("Error parsing ICode");
-        return false;
+      if (buffer.substr(26, 1) != " ") // Record may not be present
+      // TODO: Change to find_first_not_of
+      {
+        char iCode; // Unique ID for inserted residues
+        iCode = lexicalCast<char>(buffer.substr(26, 1), ok);
+        if (!ok) {
+          appendError("Error parsing ICode");
+          return false;
+        }
       }
 
       Vector3 pos; // Coordinates
@@ -157,24 +163,28 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       int b2;
       b2 = lexicalCast<int>(buffer.substr(16, 5), ok);
-      if (!ok) {
-        appendError("Error parsing serial number of second bonded atom");
+      if (!ok &&
+          (buffer.substr(16, 5).find_first_not_of(' ') != std::string::npos)) {
+        appendError(buffer.substr(16, 5));
         return false;
       }
 
       int b3;
       b3 = lexicalCast<int>(buffer.substr(21, 5), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(21, 5).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing serial number of third bonded atom");
         return false;
       }
 
       int b4;
       b4 = lexicalCast<int>(buffer.substr(26, 5), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(26, 5).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing serial number of fourth bonded atom");
         return false;
       }
+      // Up to how many bonds?
     }
 
     else if (startsWith(buffer, "HELIX")) { // Space after HELIX?
@@ -209,7 +219,8 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char initICode;
       initICode = lexicalCast<char>(buffer.substr(25, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(25, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing initial ICode");
         return false;
       }
@@ -233,7 +244,8 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char endICode;
       endICode = lexicalCast<char>(buffer.substr(37, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(37, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing end ICode");
         return false;
       }
@@ -292,7 +304,8 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char initICode;
       initICode = lexicalCast<char>(buffer.substr(26, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(26, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing initial ICode");
         return false;
       }
@@ -316,7 +329,8 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char endICode;
       endICode = lexicalCast<char>(buffer.substr(37, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(37, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing end ICode");
         return false;
       }
@@ -336,21 +350,24 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char curChainId;
       curChainId = lexicalCast<char>(buffer.substr(49, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(49, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing chain ID");
         return false;
       }
 
       int curResSeq;
       curResSeq = lexicalCast<int>(buffer.substr(50, 4), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(50, 4).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing current residue sequence");
         return false;
       }
 
       char curICode;
       curICode = lexicalCast<char>(buffer.substr(54, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(54, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing current ICode");
         return false;
       }
@@ -363,21 +380,24 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       char prevChainId;
       prevChainId = lexicalCast<char>(buffer.substr(64, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(64, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing previous chain ID");
         return false;
       }
 
       int prevResSeq;
       prevResSeq = lexicalCast<int>(buffer.substr(65, 4), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(65, 4).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing previous residue sequence");
         return false;
       }
 
       char prevICode;
       prevICode = lexicalCast<char>(buffer.substr(69, 1), ok);
-      if (!ok) {
+      if (!ok &&
+          (buffer.substr(69, 1).find_first_not_of(' ') != std::string::npos)) {
         appendError("Error parsing previous ICode");
         return false;
       }
@@ -411,7 +431,7 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
         return false;
       }
 
-      matrix(row, 3) = lexicalCast<float>(buffer.substr(53, 5), ok);
+      matrix(row, 3) = lexicalCast<float>(buffer.substr(55, 13), ok);
       if (!ok) {
         appendError("Error parsing BIOMT matrix column 3");
         return false;
@@ -449,7 +469,7 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
         return false;
       }
 
-      matrix(row, 3) = lexicalCast<float>(buffer.substr(53, 5), ok);
+      matrix(row, 3) = lexicalCast<float>(buffer.substr(55, 13), ok);
       if (!ok) {
         appendError("Error parsing SMTRY matrix column 3");
         return false;
@@ -458,9 +478,9 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
       if (row == 2)
         symMatrices.push_back(matrix);
     }
-  }
+  } // End while loop
   return true;
-}
+} // End read
 
 std::vector<std::string> PdbFormat::fileExtensions() const
 {
