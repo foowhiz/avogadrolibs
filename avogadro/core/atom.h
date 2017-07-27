@@ -163,6 +163,9 @@ public:
   bool selected() const;
   /** @} */
 
+  void setAtomName(Index atomId, std::string atomName);
+  std::string atomName() const;
+
 private:
   MoleculeType* m_molecule;
   Index m_index;
@@ -315,6 +318,18 @@ template <class Molecule_T>
 bool AtomTemplate<Molecule_T>::selected() const
 {
   return m_molecule->atomSelected(m_index);
+}
+
+template <class Molecule_T>
+void AtomTemplate<Molecule_T>::setAtomName(Index atomId, std::string atomName)
+{
+  m_molecule->setName(atomId, atomName);
+}
+
+template <class Molecule_T>
+std::string AtomTemplate<Molecule_T>::atomName() const
+{
+  return m_molecule->viewAtomName(m_index);
 }
 
 } // end Core namespace

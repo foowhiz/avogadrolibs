@@ -100,15 +100,12 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
         return false;
       }
 
-      if (buffer.substr(26, 1) != " ") // Record may not be present
-      // TODO: Change to find_first_not_of
-      {
-        char iCode; // Unique ID for inserted residues
-        iCode = lexicalCast<char>(buffer.substr(26, 1), ok);
-        if (!ok) {
-          appendError("Error parsing ICode");
-          return false;
-        }
+      char iCode; // Unique ID for inserted residues
+      iCode = lexicalCast<char>(buffer.substr(26, 1), ok);
+      if (!ok &&
+        (buffer.substr(26, 1).find_first_not_of(' ') != std::string::npos)) {
+        appendError("Error parsing ICode");
+        return false;
       }
 
       Vector3 pos; // Coordinates
@@ -142,6 +139,11 @@ bool PdbFormat::read(std::istream& in, Core::Molecule& mol)
 
       string charge;
       charge = buffer.substr(78, 2);
+
+      unsigned char atomicNum = Elements::atomicNumberFromSymbol(element);
+      Atom newAtom = mol.addAtom(atomicNum);
+      newAtom.setPosition3d(pos);
+      newAtom.setAtomName(serial, element); // May require casting of serial to Index type
     }
 
     else if (startsWith(buffer, "CONECT")) {

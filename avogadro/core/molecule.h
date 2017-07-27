@@ -250,6 +250,17 @@ public:
    */
   bool atomSelected(Index atomId) const;
 
+  /**
+   * Set name of atom as given in PDB file
+   */
+  void setName(Index atomId, std::string atomName);
+
+  /**
+   * Returns name of atom as in PDB file
+   */
+
+  std::string viewAtomName(Index atomId);
+
   /** Returns whether the selection is empty or not */
   bool isSelectionEmpty() const;
 
@@ -544,6 +555,7 @@ protected:
   Array<Array<Vector3>> m_coordinates3d; // Used for conformers/trajectories.
   Array<AtomHybridization> m_hybridizations;
   Array<signed char> m_formalCharges;
+  Array<std::string> m_atomNames;
 
   // Vibration data if available.
   Array<double> m_vibrationFrequencies;
@@ -723,6 +735,17 @@ inline bool Molecule::atomSelected(Index atomId) const
   return atomId < m_selectedAtoms.size() ? m_selectedAtoms[atomId] : false;
 }
 
+inline void Molecule::setName(Index atomId, std::string atomName)
+{
+  if (atomId >= m_atomNames.size())
+    m_atomNames.resize(atomCount(), false);
+  m_atomNames[atomId] = atomName;
+}
+
+inline std::string Molecule::viewAtomName(Index atomId)
+{
+  return atomId < m_atomNames.size() ? m_atomNames[atomId] : "error";
+}
 inline bool Molecule::isSelectionEmpty() const
 {
   for (Index i = 0; i < m_selectedAtoms.size(); ++i) {
