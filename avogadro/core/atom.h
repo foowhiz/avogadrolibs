@@ -163,8 +163,8 @@ public:
   bool selected() const;
   /** @} */
 
-  void setAtomName(Index atomId, std::string atomName);
-  std::string atomName() const;
+  void setAtomName(std::string atomName);
+  std::string getAtomName() const;
 
 private:
   MoleculeType* m_molecule;
@@ -321,13 +321,13 @@ bool AtomTemplate<Molecule_T>::selected() const
 }
 
 template <class Molecule_T>
-void AtomTemplate<Molecule_T>::setAtomName(Index atomId, std::string atomName)
+void AtomTemplate<Molecule_T>::setAtomName(std::string atomName)
 {
-  m_molecule->setName(atomId, atomName);
+  m_molecule->setAtomName1(atomName);
 }
 
 template <class Molecule_T>
-std::string AtomTemplate<Molecule_T>::atomName() const
+std::string AtomTemplate<Molecule_T>::getAtomName() const
 {
   return m_molecule->viewAtomName(m_index);
 }

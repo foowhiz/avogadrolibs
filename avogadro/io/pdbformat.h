@@ -36,7 +36,7 @@ public:
 
   Operations supportedOperations() const override
   {
-    return Read; //Unsure of what all should be there
+    return Read | File | Stream | String; //Unsure of what all should be there
   }
 
   FileFormat* newInstance() const override { return new PdbFormat; }

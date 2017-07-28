@@ -29,6 +29,8 @@
 #include "variantmap.h"
 #include "vector.h"
 
+using std::vector;
+
 namespace Avogadro {
 namespace Core {
 class BasisSet;
@@ -253,7 +255,7 @@ public:
   /**
    * Set name of atom as given in PDB file
    */
-  void setName(Index atomId, std::string atomName);
+  void setAtomName1(Index atomId, std::string atomName);
 
   /**
    * Returns name of atom as in PDB file
@@ -555,7 +557,7 @@ protected:
   Array<Array<Vector3>> m_coordinates3d; // Used for conformers/trajectories.
   Array<AtomHybridization> m_hybridizations;
   Array<signed char> m_formalCharges;
-  Array<std::string> m_atomNames;
+  std::vector<std::string> m_atomNames;
 
   // Vibration data if available.
   Array<double> m_vibrationFrequencies;
@@ -735,11 +737,9 @@ inline bool Molecule::atomSelected(Index atomId) const
   return atomId < m_selectedAtoms.size() ? m_selectedAtoms[atomId] : false;
 }
 
-inline void Molecule::setName(Index atomId, std::string atomName)
+inline void Molecule::setAtomName1(Index atomId, std::string atomName)
 {
-  if (atomId >= m_atomNames.size())
-    m_atomNames.resize(atomCount(), false);
-  m_atomNames[atomId] = atomName;
+  m_atomNames.push_back(atomName);
 }
 
 inline std::string Molecule::viewAtomName(Index atomId)

@@ -22,6 +22,8 @@
 #include <avogadro/rendering/groupnode.h>
 #include <avogadro/rendering/linestripgeometry.h>
 
+#include <Eigen/Dense>
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHBoxLayout>
@@ -39,6 +41,7 @@ using Rendering::GeometryNode;
 using Rendering::GroupNode;
 using Rendering::LineStripGeometry;
 using std::vector;
+using namespace Eigen;
 
 Ribbon::Ribbon(QObject* p)
   : ScenePlugin(p), m_enabled(true), m_group(nullptr)
@@ -50,51 +53,35 @@ Ribbon::~Ribbon()
 
 void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
 {
-  m_group = &node;
-  GeometryNode* geometry = new GeometryNode;
-  node.addChild(geometry);
-
-  LineStripGeometry* lines = new LineStripGeometry;
-  lines->identifier().molecule = &molecule;
-  lines->identifier().type = Rendering::BondType;
-  geometry->addDrawable(lines);
-  
   vector<Core::Atom> ca; // Contains all alpha carbons
   vector<Core::Atom> o;   //Contains all carbonyl oxygens
 
-  for(Index i = 0; i < molecule.bondCount(); ++i) {
+  for(Index i = 0; i < molecule.atomCount(); ++i) {
     Core::Atom atom = molecule.atom(i);
-    if (atom.atomName() == "CA")
+    if (atom.getAtomName() == "CA")
       ca.push_back(atom);
 
-    else if(atom.atomName() == "O")
+    else if(atom.getAtomName() == "O")
       o.push_back(atom);
-  }
+    }
 
-  for (size_t s = 0; s < ca.size(); ++s)
+  for(size_t t; t < o.size(); ++t)
   {
-    Vector3f pos1 = ca[s].position3d().cast<float>();
-    Vector3f pos2 = ca[s+1].position3d().cast<float>();
-    Vector3f pos3 = o[s].position3d().cast<float>();
+    Eigen::Matrix<Real, 3, 1> a = ca[t+1].position3d() - ca[t].position3d();
+    Eigen::Matrix<Real, 3, 1> b = o[t].position3d() - ca[t].position3d();
+    Eigen::Matrix<Real, 3, 1> c;
 
-    Vector3ub color1(Elements::color(ca[s].atomicNumber()));
-    Vector3ub color2(Elements::color(ca[s+1].atomicNumber()));
-    Vector3ub color3(Elements::color(o[s].atomicNumber()));
+    //Cross product
+    c(0, 0) = a(1, 0)*b(2, 0) - a(2, 0)*b(1, 0);
+    c(1, 0) = a(2, 0)*b(0, 0) - a(0, 0)*b(2, 0);
+    c(2, 0) = a(0, 0)*b(1, 0) - a(1, 0)*b(0, 0);
 
-    Array<Vector3f> points;
-    Array<Vector3ub> colors;
+    Eigen::Matrix<Real, 3, 1> d;
+    d(0, 0) = c(1, 0)*a(2, 0) - c(2, 0)*a(1, 0);
+    d(1, 0) = c(2, 0)*a(0, 0) - c(0, 0)*a(2, 0);
+    d(2, 0) = c(0, 0)*a(1, 0) - c(1, 0)*a(0, 0);
 
-    points.push_back(pos1);
-    points.push_back(pos2);
-    points.push_back(pos3);
-
-    colors.push_back(color1);
-    colors.push_back(color2);
-    colors.push_back(color3);
-
-    lines->addLineStrip(points, colors, 1.0f);
   }
-
 }
 
 bool Ribbon::isEnabled() const
