@@ -57,9 +57,9 @@ Ribbon::~Ribbon()
 
 void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
 {
-  //for(size_t i = 0; i < molecule.atomCount(); i+=2)
-  //{
-    size_t i = 0;
+  for(size_t i = 0; i < (molecule.atomCount()-2); i+=2)
+  {
+    //size_t i = 0;
     Core::Atom ca1 = molecule.atom(i);  // First alpha carbon
     Core::Atom ca2 = molecule.atom(i+2);  // Second alpha carbon
     Core::Atom o = molecule.atom(i+1);  //Carbonyl oxygen between ca1 & ca2
@@ -72,7 +72,7 @@ void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
     c(1, 0) = a(2, 0)*b(0, 0) - a(0, 0)*b(2, 0);
     c(2, 0) = a(0, 0)*b(1, 0) - a(1, 0)*b(0, 0);
     /*
-     *Normalize
+     *Need to Normalize
     */
 
     Eigen::Matrix<Real, 3, 1> d;
@@ -80,7 +80,7 @@ void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
     d(1, 0) = c(2, 0)*a(0, 0) - c(0, 0)*a(2, 0);
     d(2, 0) = c(0, 0)*a(1, 0) - c(1, 0)*a(0, 0);
     /*
-     *Normalize
+     *Need to Normalize
     */
 
     Core::Array<Vector3f> vertices;
@@ -103,9 +103,9 @@ void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
     mesh1->setOpacity(opacity);
     unsigned int index1 = mesh1->addVertices(vertices, normals);
     mesh1->addTriangle(index1, index1 + 1, index1 + 2);
-    mesh1->setRenderPass(opacity == 255 ? Rendering::OpaquePass
-                                        : Rendering::TranslucentPass);
-  //}
+    //mesh1->setRenderPass(opacity == 255 ? Rendering::OpaquePass
+      //                                  : Rendering::TranslucentPass);
+  }
 }
 
 bool Ribbon::isEnabled() const
