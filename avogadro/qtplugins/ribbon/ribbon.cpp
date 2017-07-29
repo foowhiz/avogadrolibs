@@ -18,9 +18,12 @@
 
 #include <avogadro/core/elements.h>
 #include <avogadro/core/molecule.h>
+#include <avogadro/core/mesh.h>
+#include <avogadro/core/vector.h>
 #include <avogadro/rendering/geometrynode.h>
 #include <avogadro/rendering/groupnode.h>
-#include <avogadro/rendering/linestripgeometry.h>
+#include <avogadro/rendering/meshgeometry.h>
+
 
 #include <Eigen/Dense>
 
@@ -37,14 +40,15 @@ namespace QtPlugins {
 using Core::Elements;
 using Core::Molecule;
 using Core::Array;
+using Core::Mesh;
+
 using Rendering::GeometryNode;
 using Rendering::GroupNode;
-using Rendering::LineStripGeometry;
+using Rendering::MeshGeometry;
 using std::vector;
-using namespace Eigen;
 
 Ribbon::Ribbon(QObject* p)
-  : ScenePlugin(p), m_enabled(true), m_group(nullptr)
+  : ScenePlugin(p), m_enabled(false)
 {
 }
 Ribbon::~Ribbon()
@@ -53,35 +57,55 @@ Ribbon::~Ribbon()
 
 void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
 {
-  vector<Core::Atom> ca; // Contains all alpha carbons
-  vector<Core::Atom> o;   //Contains all carbonyl oxygens
-
-  for(Index i = 0; i < molecule.atomCount(); ++i) {
-    Core::Atom atom = molecule.atom(i);
-    if (atom.getAtomName() == "CA")
-      ca.push_back(atom);
-
-    else if(atom.getAtomName() == "O")
-      o.push_back(atom);
-    }
-
-  for(size_t t; t < o.size(); ++t)
-  {
-    Eigen::Matrix<Real, 3, 1> a = ca[t+1].position3d() - ca[t].position3d();
-    Eigen::Matrix<Real, 3, 1> b = o[t].position3d() - ca[t].position3d();
-    Eigen::Matrix<Real, 3, 1> c;
+  //for(size_t i = 0; i < molecule.atomCount(); i+=2)
+  //{
+    size_t i = 0;
+    Core::Atom ca1 = molecule.atom(i);  // First alpha carbon
+    Core::Atom ca2 = molecule.atom(i+2);  // Second alpha carbon
+    Core::Atom o = molecule.atom(i+1);  //Carbonyl oxygen between ca1 & ca2
+    Vector3f a = ca2.position3d().cast<float>() - ca1.position3d().cast<float>();
+    Vector3f b = o.position3d().cast<float>() - ca1.position3d().cast<float>();
+    Vector3f c;
 
     //Cross product
     c(0, 0) = a(1, 0)*b(2, 0) - a(2, 0)*b(1, 0);
     c(1, 0) = a(2, 0)*b(0, 0) - a(0, 0)*b(2, 0);
     c(2, 0) = a(0, 0)*b(1, 0) - a(1, 0)*b(0, 0);
+    /*
+     *Normalize
+    */
 
     Eigen::Matrix<Real, 3, 1> d;
     d(0, 0) = c(1, 0)*a(2, 0) - c(2, 0)*a(1, 0);
     d(1, 0) = c(2, 0)*a(0, 0) - c(0, 0)*a(2, 0);
     d(2, 0) = c(0, 0)*a(1, 0) - c(1, 0)*a(0, 0);
+    /*
+     *Normalize
+    */
 
-  }
+    Core::Array<Vector3f> vertices;
+    vertices.push_back(ca1.position3d().cast<float>());
+    vertices.push_back(o.position3d().cast<float>());
+    vertices.push_back(ca2.position3d().cast<float>());
+
+    Core::Array<Vector3f> normals;  // Should be a good approx
+    for (int j = 0; j < 3; ++j)
+      normals.push_back(c);
+
+    unsigned char opacity = 255;
+
+    GeometryNode* geometry = new GeometryNode;
+    node.addChild(geometry);
+
+    MeshGeometry* mesh1 = new MeshGeometry;
+    geometry->addDrawable(mesh1);
+    mesh1->setColor(Vector3ub(255, 0, 0));
+    mesh1->setOpacity(opacity);
+    unsigned int index1 = mesh1->addVertices(vertices, normals);
+    mesh1->addTriangle(index1, index1 + 1, index1 + 2);
+    mesh1->setRenderPass(opacity == 255 ? Rendering::OpaquePass
+                                        : Rendering::TranslucentPass);
+  //}
 }
 
 bool Ribbon::isEnabled() const
