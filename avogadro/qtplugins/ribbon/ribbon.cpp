@@ -59,12 +59,17 @@ Ribbon::~Ribbon()
 
 void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
 {
-  Vector3f temp1;
-  temp1 << 0, 0, 0;
-  Vector3f temp2;
-  temp2 << 0, 0, 0;
-  Vector3f tempc;
-  tempc<< 0, 0, 0;
+  GeometryNode* geometry = new GeometryNode;
+  node.addChild(geometry);
+
+  unsigned char opacity = 255;
+  MeshGeometry* mesh1 = new MeshGeometry;
+  geometry->addDrawable(mesh1);
+  mesh1->setColor(Vector3ub(255, 0, 0));
+  mesh1->setOpacity(opacity);
+
+  Core::Array<Vector3f> vertices;
+  Core::Array<Vector3f> normals;
 
   for(size_t i = 0; i < (molecule.atomCount()-2); i+=2)
   {
@@ -100,47 +105,27 @@ void Ribbon::process(const Molecule& molecule, Rendering::GroupNode& node)
      *in the direction of vector c, if residue in helix
     */
 
-    d = d*3/2;  // d to be multiplied by half of required ribbon width
-    // TODO: Use variable instead of 3
+    d = d*5/2;  // d to be multiplied by half of required ribbon width
+    // TODO: Use variable instead of 5
 
     Vector3f p1 = p - d; // p1 and p2 are end points of ribbon width
     Vector3f p2 = p + d;
 
-    if( i != 0){
-      Core::Array<Vector3f> vertices;
-      vertices.push_back(temp1);
-      vertices.push_back(temp2);
-      vertices.push_back(p1);
-      vertices.push_back(p2);
+    vertices.push_back(p1);
+    vertices.push_back(p2);
 
-      Core::Array<Vector3f> normals;  // Should be a good approx of vertex normal
-      normals.push_back(tempc);
-      normals.push_back(tempc);
-      normals.push_back(c);
-      normals.push_back(c);
+    normals.push_back(c);
+    normals.push_back(c);
 
-      unsigned char opacity = 255;
-
-      GeometryNode* geometry = new GeometryNode;
-      node.addChild(geometry);
-
-      MeshGeometry* mesh1 = new MeshGeometry;
-      geometry->addDrawable(mesh1);
-      mesh1->setColor(Vector3ub(255, 0, 0));
-      mesh1->setOpacity(opacity);
-      unsigned int index1 = mesh1->addVertices(vertices, normals);
-      Core::Array<unsigned int> indices;
-      for(int k = 0; k < 4; ++k)
-        indices.push_back(index1 + k);
-      mesh1->addTriangles(indices);
       //mesh1->setRenderPass(opacity == 255 ? Rendering::OpaquePass
         //                                  : Rendering::TranslucentPass);
-    }
-
-    temp1 = p1;
-    temp2 = p2;
-    tempc = c;
   }
+
+  unsigned int index1 = mesh1->addVertices(vertices, normals);
+  Core::Array<unsigned int> indices;
+  for(int k = 0; k < (molecule.atomCount())/3; ++k)
+    indices.push_back(index1 + k);
+  mesh1->addTriangles(indices);
 }
 
 bool Ribbon::isEnabled() const
