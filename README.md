@@ -2,6 +2,9 @@ Avogadro 2
 ==========
 ![Avogadro 2][Avogadro2Logo]
 
+Current status of ribbon rendering:
+![Current status of ribbon rendering](https://github.com/foowhiz/foowhiz.github.io/blob/GSoC-update-3/images/ribbon.png)
+
 Introduction
 ------------
 
